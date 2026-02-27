@@ -35,8 +35,9 @@ func Build(stack detector.DetectedStack) []Check {
 		// add Redis checks
 	}
 
-	// always run env check if .env.example exists
-	// cs = append(cs, &EnvCheck{})
+	if stack.EnvExample {
+		cs = append(cs, &EnvCheck{Dir: "."})
+	}
 
 	return cs
 }
