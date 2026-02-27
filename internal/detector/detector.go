@@ -11,6 +11,8 @@ type DetectedStack struct {
 	Node     bool
 	Python   bool
 	Java     bool
+	Maven    bool
+	Gradle   bool
 	Docker   bool
 	Postgres bool
 	Redis    bool
@@ -25,8 +27,9 @@ func Detect(dir string) DetectedStack {
 	stack.Node = fileExists(filepath.Join(dir, "package.json"))
 	stack.Python = fileExists(filepath.Join(dir, "requirements.txt")) ||
 		fileExists(filepath.Join(dir, "pyproject.toml"))
-	stack.Java = fileExists(filepath.Join(dir, "pom.xml")) ||
-		fileExists(filepath.Join(dir, "build.gradle"))
+	stack.Maven = fileExists(filepath.Join(dir, "pom.xml"))
+	stack.Gradle = fileExists(filepath.Join(dir, "build.gradle"))
+	stack.Java = stack.Maven || stack.Gradle
 	stack.Docker = fileExists(filepath.Join(dir, "Dockerfile")) ||
 		fileExists(filepath.Join(dir, "docker-compose.yml")) ||
 		fileExists(filepath.Join(dir, "docker-compose.yaml"))
