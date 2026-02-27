@@ -17,7 +17,8 @@ type DetectedStack struct {
 	Postgres bool
 	Redis    bool
 	MySQL    bool
-	MongoDB  bool
+	MongoDB    bool
+	EnvExample bool
 }
 
 func Detect(dir string) DetectedStack {
@@ -39,6 +40,7 @@ func Detect(dir string) DetectedStack {
 	stack.MySQL = strings.Contains(dbURL, "mysql")
 	stack.MongoDB = os.Getenv("MONGODB_URI") != "" || os.Getenv("MONGO_URL") != ""
 	stack.Redis = os.Getenv("REDIS_URL") != "" || os.Getenv("REDIS_URI") != ""
+	stack.EnvExample = fileExists(filepath.Join(dir, ".env.example"))
 
 	return stack
 }
