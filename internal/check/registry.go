@@ -1,31 +1,28 @@
 package check
 
-import (
-	"github.com/vidya381/devcheck/internal/checks"
-	"github.com/vidya381/devcheck/internal/detector"
-)
+import "github.com/vidya381/devcheck/internal/detector"
 
 func Build(stack detector.DetectedStack) []Check {
 	var cs []Check
 
 	if stack.Go {
-		cs = append(cs, &checks.BinaryCheck{Binary: "go"})
+		cs = append(cs, &BinaryCheck{Binary: "go"})
 	}
 	if stack.Node {
-		cs = append(cs, &checks.BinaryCheck{Binary: "node"})
-		cs = append(cs, &checks.BinaryCheck{Binary: "npm"})
+		cs = append(cs, &BinaryCheck{Binary: "node"})
+		cs = append(cs, &BinaryCheck{Binary: "npm"})
 	}
 	if stack.Python {
-		cs = append(cs, &checks.BinaryCheck{Binary: "python3"})
-		cs = append(cs, &checks.BinaryCheck{Binary: "pip"})
+		cs = append(cs, &BinaryCheck{Binary: "python3"})
+		cs = append(cs, &BinaryCheck{Binary: "pip"})
 	}
 	if stack.Java {
-		cs = append(cs, &checks.BinaryCheck{Binary: "java"})
+		cs = append(cs, &BinaryCheck{Binary: "java"})
 		if stack.Maven {
-			cs = append(cs, &checks.BinaryCheck{Binary: "mvn"})
+			cs = append(cs, &BinaryCheck{Binary: "mvn"})
 		}
 		if stack.Gradle {
-			cs = append(cs, &checks.BinaryCheck{Binary: "gradle"})
+			cs = append(cs, &BinaryCheck{Binary: "gradle"})
 		}
 	}
 	if stack.Docker {
