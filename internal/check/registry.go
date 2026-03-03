@@ -11,6 +11,7 @@ func Build(stack detector.DetectedStack) []Check {
 
 	if stack.Go {
 		cs = append(cs, &BinaryCheck{Binary: "go"})
+		cs = append(cs, &BinaryCheck{Binary: "golangci-lint"})
 		cs = append(cs, &GoVersionCheck{Dir: "."})
 	}
 	if stack.Node {
