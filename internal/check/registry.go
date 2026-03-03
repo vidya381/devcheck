@@ -11,7 +11,10 @@ func Build(stack detector.DetectedStack) []Check {
 
 	if stack.Go {
 		cs = append(cs, &BinaryCheck{Binary: "go"})
-		cs = append(cs, &BinaryCheck{Binary: "golangci-lint"})
+		// Only check golangci-lint if project has linting configuration
+		if fileExists(".golangci.yml") || fileExists(".golangci.yaml") {
+			cs = append(cs, &BinaryCheck{Binary: "golangci-lint"})
+		}
 		cs = append(cs, &GoVersionCheck{Dir: "."})
 	}
 	if stack.Node {
@@ -55,4 +58,10 @@ func Build(stack detector.DetectedStack) []Check {
 	}
 
 	return cs
+}
+
+// fileExists checks if a file exists in the current directory
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }
