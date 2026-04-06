@@ -17,6 +17,9 @@ func Build(stack detector.DetectedStack) []Check {
 		}
 		cs = append(cs, &GoVersionCheck{Dir: "."})
 		cs = append(cs, &DepsCheck{Dir: ".", Stack: "go"})
+		if stack.GoWork {
+			cs = append(cs, &GoWorkCheck{Dir: "."})
+		}
 	}
 	if stack.Node {
 		pm := stack.PackageManager
