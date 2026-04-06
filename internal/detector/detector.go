@@ -8,6 +8,7 @@ import (
 
 type DetectedStack struct {
 	Go       bool
+	GoWork   bool
 	Node     bool
 	// PackageManager is the Node package manager inferred from the lockfile.
 	// Possible values: "npm", "pnpm", "yarn". Empty string when Node is false.
@@ -29,6 +30,7 @@ func Detect(dir string) DetectedStack {
 	stack := DetectedStack{}
 
 	stack.Go = fileExists(filepath.Join(dir, "go.mod"))
+	stack.GoWork = fileExists(filepath.Join(dir, "go.work"))
 	stack.Node = fileExists(filepath.Join(dir, "package.json"))
 	if stack.Node {
 		switch {

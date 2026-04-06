@@ -122,3 +122,22 @@ func TestDetect_DockerCompose_false_when_absent(t *testing.T) {
 		t.Error("expected DockerCompose=false when no compose file present")
 	}
 }
+
+func TestDetect_GoWork_true_when_present(t *testing.T) {
+	dir := t.TempDir()
+	touch(t, filepath.Join(dir, "go.mod"))
+	touch(t, filepath.Join(dir, "go.work"))
+	stack := Detect(dir)
+	if !stack.GoWork {
+		t.Error("expected GoWork=true when go.work exists")
+	}
+}
+
+func TestDetect_GoWork_false_when_absent(t *testing.T) {
+	dir := t.TempDir()
+	touch(t, filepath.Join(dir, "go.mod"))
+	stack := Detect(dir)
+	if stack.GoWork {
+		t.Error("expected GoWork=false when go.work is absent")
+	}
+}
