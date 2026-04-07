@@ -141,3 +141,20 @@ func TestDetect_GoWork_false_when_absent(t *testing.T) {
 		t.Error("expected GoWork=false when go.work is absent")
 	}
 }
+
+func TestDetect_Ruby_true_when_gemfile_present(t *testing.T) {
+	dir := t.TempDir()
+	touch(t, filepath.Join(dir, "Gemfile"))
+	stack := Detect(dir)
+	if !stack.Ruby {
+		t.Error("expected Ruby=true when Gemfile exists")
+	}
+}
+
+func TestDetect_Ruby_false_when_absent(t *testing.T) {
+	dir := t.TempDir()
+	stack := Detect(dir)
+	if stack.Ruby {
+		t.Error("expected Ruby=false when no Gemfile present")
+	}
+}

@@ -44,6 +44,8 @@ func (c *DepsCheck) Name() string {
 		return "Python dependencies installed"
 	case "go":
 		return "Go dependencies installed"
+	case "ruby":
+		return "Ruby dependencies installed"
 	default:
 		return "Project dependencies installed"
 	}
@@ -57,6 +59,8 @@ func (c *DepsCheck) Run(_ context.Context) Result {
 		return c.runPython()
 	case "go":
 		return c.runGo()
+	case "ruby":
+		return c.runRuby()
 	default:
 		return Result{
 			Name:    c.Name(),
@@ -246,6 +250,34 @@ func parseFreeze(output []byte) map[string]struct{} {
 		installed[strings.ToLower(strings.TrimSpace(parts[0]))] = struct{}{}
 	}
 	return installed
+}
+
+func (c *DepsCheck) runRuby() Result {
+	// vendor/bundle is the canonical signal that bundle install --path has been run.
+	// Gemfile.lock is the fallback: it exists once bundle install has succeeded at least once.
+	vendorBundle := filepath.Join(c.Dir, "vendor", "bundle")
+	gemfileLock := filepath.Join(c.Dir, "Gemfile.lock")
+
+	if dirExists(vendorBundle) {
+		return Result{
+			Name:    c.Name(),
+			Status:  StatusPass,
+			Message: "vendor/bundle directory exists; Ruby gems are installed",
+		}
+	}
+	if _, err := os.Stat(gemfileLock); err == nil {
+		return Result{
+			Name:    c.Name(),
+			Status:  StatusPass,
+			Message: "Gemfile.lock exists; Ruby gems have been installed",
+		}
+	}
+	return Result{
+		Name:    c.Name(),
+		Status:  StatusFail,
+		Message: "Gemfile.lock not found and vendor/bundle directory missing",
+		Fix:     "run `bundle install` to install Ruby gems",
+	}
 }
 
 func (c *DepsCheck) runGo() Result {
