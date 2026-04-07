@@ -38,6 +38,11 @@ func Build(stack detector.DetectedStack) []Check {
 		cs = append(cs, &DepsCheck{Dir: ".", Stack: "python"})
 		cs = append(cs, &GitHooksCheck{Dir: ".", Stack: "python"})
 	}
+	if stack.Ruby {
+		cs = append(cs, &BinaryCheck{Binary: "ruby"})
+		cs = append(cs, &BinaryCheck{Binary: "bundler"})
+		cs = append(cs, &DepsCheck{Dir: ".", Stack: "ruby"})
+	}
 	if stack.Java {
 		cs = append(cs, &BinaryCheck{Binary: "java"})
 		if stack.Maven {
