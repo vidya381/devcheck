@@ -246,3 +246,58 @@ func setupPythonDir(t *testing.T, requirements string) (dir string, pipBin strin
 	}
 	return dir, pipBin
 }
+
+func TestDepsCheck_Ruby_Pass_VendorBundle(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "vendor", "bundle"), 0o755); err != nil {
+		t.Fatalf("mkdir vendor/bundle: %v", err)
+	}
+	c := &DepsCheck{Dir: dir, Stack: "ruby"}
+	r := c.Run(context.Background())
+	if r.Status != StatusPass {
+		t.Errorf("expected pass when vendor/bundle exists, got %v: %s", r.Status, r.Message)
+	}
+}
+
+func TestDepsCheck_Ruby_Pass_GemfileLock(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "Gemfile.lock"), []byte("GEM\n"), 0o644); err != nil {
+		t.Fatalf("write Gemfile.lock: %v", err)
+	}
+	c := &DepsCheck{Dir: dir, Stack: "ruby"}
+	r := c.Run(context.Background())
+	if r.Status != StatusPass {
+		t.Errorf("expected pass when Gemfile.lock exists, got %v: %s", r.Status, r.Message)
+	}
+}
+
+func TestDepsCheck_Ruby_Fail_NeitherPresent(t *testing.T) {
+	dir := t.TempDir()
+	c := &DepsCheck{Dir: dir, Stack: "ruby"}
+	r := c.Run(context.Background())
+	if r.Status != StatusFail {
+		t.Errorf("expected fail when neither vendor/bundle nor Gemfile.lock exist, got %v", r.Status)
+	}
+	if !strings.Contains(r.Fix, "bundle install") {
+		t.Errorf("expected fix to mention 'bundle install', got: %s", r.Fix)
+	}
+}
+
+func TestDepsCheck_Ruby_VendorBundle_Takes_Priority(t *testing.T) {
+	// Both present — vendor/bundle should win (pass with that message).
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "vendor", "bundle"), 0o755); err != nil {
+		t.Fatalf("mkdir vendor/bundle: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "Gemfile.lock"), []byte("GEM\n"), 0o644); err != nil {
+		t.Fatalf("write Gemfile.lock: %v", err)
+	}
+	c := &DepsCheck{Dir: dir, Stack: "ruby"}
+	r := c.Run(context.Background())
+	if r.Status != StatusPass {
+		t.Errorf("expected pass, got %v: %s", r.Status, r.Message)
+	}
+	if !strings.Contains(r.Message, "vendor/bundle") {
+		t.Errorf("expected vendor/bundle message to take priority, got: %s", r.Message)
+	}
+}
