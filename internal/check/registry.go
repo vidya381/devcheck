@@ -43,6 +43,11 @@ func Build(stack detector.DetectedStack) []Check {
 		cs = append(cs, &BinaryCheck{Binary: "bundler"})
 		cs = append(cs, &DepsCheck{Dir: ".", Stack: "ruby"})
 	}
+	if stack.Rust {
+		cs = append(cs, &BinaryCheck{Binary: "rustc"})
+		cs = append(cs, &BinaryCheck{Binary: "cargo"})
+		cs = append(cs, &RustVersionCheck{Dir: "."})
+	}
 	if stack.Java {
 		cs = append(cs, &BinaryCheck{Binary: "java"})
 		if stack.Maven {
