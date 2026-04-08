@@ -158,3 +158,20 @@ func TestDetect_Ruby_false_when_absent(t *testing.T) {
 		t.Error("expected Ruby=false when no Gemfile present")
 	}
 }
+
+func TestDetect_Rust_true_when_cargo_toml_present(t *testing.T) {
+	dir := t.TempDir()
+	touch(t, filepath.Join(dir, "Cargo.toml"))
+	stack := Detect(dir)
+	if !stack.Rust {
+		t.Error("expected Rust=true when Cargo.toml exists")
+	}
+}
+
+func TestDetect_Rust_false_when_absent(t *testing.T) {
+	dir := t.TempDir()
+	stack := Detect(dir)
+	if stack.Rust {
+		t.Error("expected Rust=false when no Cargo.toml present")
+	}
+}

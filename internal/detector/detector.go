@@ -15,6 +15,7 @@ type DetectedStack struct {
 	PackageManager string
 	Python   bool
 	Ruby     bool
+	Rust     bool
 	Java     bool
 	Maven    bool
 	Gradle   bool
@@ -46,6 +47,7 @@ func Detect(dir string) DetectedStack {
 	stack.Python = fileExists(filepath.Join(dir, "requirements.txt")) ||
 		fileExists(filepath.Join(dir, "pyproject.toml"))
 	stack.Ruby = fileExists(filepath.Join(dir, "Gemfile"))
+	stack.Rust = fileExists(filepath.Join(dir, "Cargo.toml"))
 	stack.Maven = fileExists(filepath.Join(dir, "pom.xml"))
 	stack.Gradle = fileExists(filepath.Join(dir, "build.gradle"))
 	stack.Java = stack.Maven || stack.Gradle

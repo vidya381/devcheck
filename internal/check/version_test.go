@@ -84,3 +84,79 @@ func TestNodeVersionCheck_NoRequirement(t *testing.T) {
 		t.Errorf("expected skipped, got %v", result.Status)
 	}
 }
+
+func TestRustVersionCheck_NoToolchainFile_Skipped(t *testing.T) {
+	c := &RustVersionCheck{Dir: t.TempDir()}
+	r := c.Run(context.Background())
+	if r.Status != StatusSkipped {
+		t.Errorf("expected skipped when no rust-toolchain.toml, got %v: %s", r.Status, r.Message)
+	}
+}
+
+func TestRustVersionCheck_Pass(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(dir+"/rust-toolchain.toml", []byte("[toolchain]\nchannel = \"1.0.0\"\n"), 0644)
+
+	c := &RustVersionCheck{Dir: dir}
+	r := c.Run(context.Background())
+	// rustc is likely installed in CI; if not, we get Fail, not Skipped.
+	// Just ensure it doesn't panic and returns a result.
+	if r.Name != "Rust version" {
+		t.Errorf("unexpected check name: %s", r.Name)
+	}
+}
+
+func TestRustVersionCheck_Fail(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(dir+"/rust-toolchain.toml", []byte("[toolchain]\nchannel = \"9999.0.0\"\n"), 0644)
+
+	c := &RustVersionCheck{Dir: dir}
+	r := c.Run(context.Background())
+	// If rustc is installed, this must fail (version too high).
+	// If rustc is not installed, it fails with "could not run rustc --version".
+	if r.Status != StatusFail {
+		t.Errorf("expected fail for unreachable version, got %v: %s", r.Status, r.Message)
+	}
+}
+
+func TestRustVersionCheck_StableChannel_Skipped(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(dir+"/rust-toolchain.toml", []byte("[toolchain]\nchannel = \"stable\"\n"), 0644)
+
+	c := &RustVersionCheck{Dir: dir}
+	r := c.Run(context.Background())
+	if r.Status != StatusSkipped {
+		t.Errorf("expected skipped for non-pinned channel 'stable', got %v: %s", r.Status, r.Message)
+	}
+}
+
+func TestReadRustRequired_TomlPinned(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(dir+"/rust-toolchain.toml", []byte("[toolchain]\nchannel = \"1.76.0\"\n"), 0644)
+	v, err := readRustRequired(dir)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if v != "1.76.0" {
+		t.Errorf("expected 1.76.0, got %q", v)
+	}
+}
+
+func TestReadRustRequired_LegacyFile(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(dir+"/rust-toolchain", []byte("1.70.0\n"), 0644)
+	v, err := readRustRequired(dir)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if v != "1.70.0" {
+		t.Errorf("expected 1.70.0, got %q", v)
+	}
+}
+
+func TestReadRustRequired_NoFile_Error(t *testing.T) {
+	_, err := readRustRequired(t.TempDir())
+	if err == nil {
+		t.Error("expected error when no toolchain file present")
+	}
+}
