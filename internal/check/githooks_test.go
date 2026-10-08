@@ -73,4 +73,3 @@ func TestGitHooksCheck_Python_PassAndWarn(t *testing.T) {
 		t.Errorf("expected warn when pre-commit missing, got %v: %s", result.Status, result.Message)
 	}
 }
-

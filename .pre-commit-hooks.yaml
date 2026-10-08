@@ -1,0 +1,7 @@
+- id: devcheck
+  name: devcheck
+  description: Check the dev environment has everything this project needs
+  entry: devcheck --ci
+  language: golang
+  pass_filenames: false
+  always_run: true

@@ -5,6 +5,9 @@ on:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -22,6 +25,12 @@ jobs:
           GOOS=darwin  GOARCH=amd64 go build -ldflags="-X main.version=${{ github.ref_name }}" -o dist/devcheck-darwin-amd64  ./cmd/devcheck
           GOOS=darwin  GOARCH=arm64 go build -ldflags="-X main.version=${{ github.ref_name }}" -o dist/devcheck-darwin-arm64  ./cmd/devcheck
           GOOS=windows GOARCH=amd64 go build -ldflags="-X main.version=${{ github.ref_name }}" -o dist/devcheck-windows-amd64.exe ./cmd/devcheck
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum devcheck-* > checksums.txt
+          cat checksums.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

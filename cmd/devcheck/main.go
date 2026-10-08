@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	"runtime/debug"
 	"sync"
 
 	"github.com/spf13/cobra"
@@ -13,7 +15,30 @@ import (
 	"github.com/vidya381/devcheck/internal/reporter"
 )
 
+// version is set by the release workflow via -ldflags. For `go install`
+// builds it stays "dev" and buildVersion falls back to the module version.
 var version = "dev"
+
+// buildVersion returns the ldflags version when one was injected, otherwise
+// the version the module system recorded. That covers `go install pkg@vX.Y.Z`
+// and gives a pseudo-version for local builds.
+func buildVersion() string {
+	if version != "dev" && version != "" {
+		return version
+	}
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return version
+	}
+	if v := info.Main.Version; v != "" && v != "(devel)" {
+		return v
+	}
+	return version
+}
+
+// errCheckFailed is returned by run when --ci is set and a check failed.
+// It is a signal, not a real error, so main exits 1 without printing it.
+var errCheckFailed = errors.New("checks failed")
 
 var (
 	flagVerbose bool
@@ -26,7 +51,7 @@ func main() {
 	root := &cobra.Command{
 		Use:     "devcheck",
 		Short:   "Check if your dev environment is ready to run this project",
-		Version: version,
+		Version: buildVersion(),
 		RunE:    run,
 	}
 
@@ -35,7 +60,13 @@ func main() {
 	root.Flags().BoolVar(&flagFix, "fix", false, "Show suggested fix for each failure")
 	root.Flags().BoolVar(&flagCI, "ci", false, "Exit with code 1 on any failure (for CI pipelines)")
 
+	root.SilenceErrors = true
+	root.SilenceUsage = true
+
 	if err := root.Execute(); err != nil {
+		if !errors.Is(err, errCheckFailed) {
+			fmt.Fprintln(os.Stderr, "Error:", err)
+		}
 		os.Exit(1)
 	}
 }
@@ -83,13 +114,13 @@ func run(cmd *cobra.Command, args []string) error {
 	if flagJSON {
 		reporter.RenderJSON(results)
 	} else {
-		reporter.Render(results, flagFix)
+		reporter.Render(results, flagFix, flagVerbose)
 	}
 
 	if flagCI {
 		for _, r := range results {
 			if r.Status == check.StatusFail {
-				os.Exit(1)
+				return errCheckFailed
 			}
 		}
 	}
