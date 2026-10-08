@@ -7,25 +7,25 @@ import (
 )
 
 type DetectedStack struct {
-	Go       bool
-	GoWork   bool
-	Node     bool
+	Go     bool
+	GoWork bool
+	Node   bool
 	// PackageManager is the Node package manager inferred from the lockfile.
 	// Possible values: "npm", "pnpm", "yarn". Empty string when Node is false.
 	PackageManager string
-	Python   bool
-	Ruby     bool
-	Rust     bool
-	Java     bool
-	Maven    bool
-	Gradle   bool
-	Docker        bool
-	DockerCompose bool
-	Postgres bool
-	Redis    bool
-	MySQL    bool
-	MongoDB    bool
-	EnvExample bool
+	Python         bool
+	Ruby           bool
+	Rust           bool
+	Java           bool
+	Maven          bool
+	Gradle         bool
+	Docker         bool
+	DockerCompose  bool
+	Postgres       bool
+	Redis          bool
+	MySQL          bool
+	MongoDB        bool
+	EnvExample     bool
 }
 
 func Detect(dir string) DetectedStack {

@@ -24,3 +24,5 @@ jobs:
 
       - name: Vet
         run: go vet ./...
+      - name: Format
+        run: test -z "$(gofmt -l .)"

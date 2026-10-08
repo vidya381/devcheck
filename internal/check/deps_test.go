@@ -5,8 +5,8 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"testing"
 	"strings"
+	"testing"
 )
 
 func TestDepsCheck_Node_PassAndFail(t *testing.T) {
@@ -150,8 +150,8 @@ func TestDepsCheck_Python_VenvNoRequirements_StillPass(t *testing.T) {
 func TestDepsCheck_Python_AllPackagesPresent(t *testing.T) {
 	dir, pipBin := setupPythonDir(t, "requests==2.31.0\nflask>=2.0\n# comment\n")
 	c := &DepsCheck{
-		Dir:   dir,
-		Stack: "python",
+		Dir:      dir,
+		Stack:    "python",
 		pipCheck: func(_ string) error { return nil },
 		pipFreeze: func(_ string) ([]byte, error) {
 			return []byte("requests==2.31.0\nFlask==2.3.0\n"), nil
@@ -167,8 +167,8 @@ func TestDepsCheck_Python_AllPackagesPresent(t *testing.T) {
 func TestDepsCheck_Python_MissingPackage(t *testing.T) {
 	dir, _ := setupPythonDir(t, "requests==2.31.0\ncelery>=5.0\n")
 	c := &DepsCheck{
-		Dir:   dir,
-		Stack: "python",
+		Dir:      dir,
+		Stack:    "python",
 		pipCheck: func(_ string) error { return nil },
 		pipFreeze: func(_ string) ([]byte, error) {
 			return []byte("requests==2.31.0\n"), nil // celery absent
@@ -200,8 +200,8 @@ func TestDepsCheck_Python_CaseInsensitiveMatch(t *testing.T) {
 	// requirements.txt uses "Requests"; freeze returns "requests" — should still pass.
 	dir, _ := setupPythonDir(t, "Requests>=2.0\n")
 	c := &DepsCheck{
-		Dir:   dir,
-		Stack: "python",
+		Dir:      dir,
+		Stack:    "python",
 		pipCheck: func(_ string) error { return nil },
 		pipFreeze: func(_ string) ([]byte, error) {
 			return []byte("requests==2.31.0\n"), nil
@@ -216,8 +216,8 @@ func TestDepsCheck_Python_CaseInsensitiveMatch(t *testing.T) {
 func TestDepsCheck_Python_EditableInstall(t *testing.T) {
 	dir, _ := setupPythonDir(t, "mylib\n")
 	c := &DepsCheck{
-		Dir:   dir,
-		Stack: "python",
+		Dir:      dir,
+		Stack:    "python",
 		pipCheck: func(_ string) error { return nil },
 		pipFreeze: func(_ string) ([]byte, error) {
 			return []byte("-e git+https://github.com/org/mylib.git@main#egg=mylib\n"), nil

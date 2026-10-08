@@ -31,9 +31,9 @@ type DepsCheck struct {
 	Dir            string
 	Stack          string // "node", "python", or "go"
 	PackageManager string // "npm", "pnpm", or "yarn" (Node only; defaults to "npm")
-	goCheck   func(dir string) error
-	pipFreeze func(pipBin string) ([]byte, error)
-	pipCheck  func(pipBin string) error
+	goCheck        func(dir string) error
+	pipFreeze      func(pipBin string) ([]byte, error)
+	pipCheck       func(pipBin string) error
 }
 
 func (c *DepsCheck) Name() string {

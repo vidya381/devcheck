@@ -107,4 +107,3 @@ func dirExists(path string) bool {
 	}
 	return info.IsDir()
 }
-
