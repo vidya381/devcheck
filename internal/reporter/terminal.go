@@ -14,7 +14,9 @@ var (
 	skipStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#6b7280"))
 )
 
-func Render(results []check.Result, showFix bool) {
+// Render prints results to stdout. Skipped checks are only printed when
+// showSkipped is set (the --verbose flag).
+func Render(results []check.Result, showFix, showSkipped bool) {
 	passed, warned, failed := 0, 0, 0
 
 	for _, r := range results {
@@ -32,13 +34,26 @@ func Render(results []check.Result, showFix bool) {
 			}
 			failed++
 		case check.StatusSkipped:
-			fmt.Printf("%s  %s\n", skipStyle.Render("–"), r.Message)
+			if showSkipped {
+				fmt.Printf("%s  %s\n", skipStyle.Render("–"), r.Message)
+			}
 		}
 	}
 
 	fmt.Println("────────────────────────────────────────")
-	fmt.Printf("  %d passed  %d warning  %d failed\n", passed, warned, failed)
+	fmt.Println(summaryLine(passed, warned, failed))
 	if failed > 0 && !showFix {
 		fmt.Println("  Run `devcheck --fix` for suggestions")
 	}
+}
+
+func summaryLine(passed, warned, failed int) string {
+	return fmt.Sprintf("  %d passed  %d %s  %d failed", passed, warned, plural(warned, "warning"), failed)
+}
+
+func plural(n int, word string) string {
+	if n == 1 {
+		return word
+	}
+	return word + "s"
 }

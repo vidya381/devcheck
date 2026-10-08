@@ -22,6 +22,13 @@ func (c *GitignoreCheck) Name() string {
 	return ".gitignore covers sensitive files"
 }
 
+func pluralPatterns(n int) string {
+	if n == 1 {
+		return "pattern"
+	}
+	return "patterns"
+}
+
 func (c *GitignoreCheck) Run(_ context.Context) Result {
 	gitignorePath := c.Dir + "/.gitignore"
 
@@ -73,7 +80,7 @@ func (c *GitignoreCheck) Run(_ context.Context) Result {
 		return Result{
 			Name:    c.Name(),
 			Status:  StatusWarn,
-			Message: fmt.Sprintf("Missing %d sensitive file patterns", len(missing)),
+			Message: fmt.Sprintf("Missing %d sensitive file %s", len(missing), pluralPatterns(len(missing))),
 			Fix:     fmt.Sprintf("Add these patterns to .gitignore:\n  %s", strings.Join(missing, "\n  ")),
 		}
 	}

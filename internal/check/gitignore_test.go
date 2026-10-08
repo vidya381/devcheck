@@ -194,3 +194,11 @@ func TestGitignoreCheck_NoGitignoreFile(t *testing.T) {
 		t.Errorf("expected fail when .gitignore missing, got %v", result.Status)
 	}
 }
+func TestPluralPatterns(t *testing.T) {
+	if got := pluralPatterns(1); got != "pattern" {
+		t.Errorf("pluralPatterns(1) = %q, want %q", got, "pattern")
+	}
+	if got := pluralPatterns(2); got != "patterns" {
+		t.Errorf("pluralPatterns(2) = %q, want %q", got, "patterns")
+	}
+}
