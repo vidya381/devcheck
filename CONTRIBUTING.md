@@ -1,54 +1,69 @@
 # Contributing
 
-All contributions are welcome — new checks, bug fixes, docs, whatever.
+New checks, bug fixes and docs are all welcome. I reply to issues and pull requests within a day or two.
 
-## Setup
-
-Fork the repo first, then clone your fork:
+## Build and test
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/devcheck
 cd devcheck
-go build ./cmd/devcheck
+go build ./...
 go test ./...
+go vet ./...
 ```
 
-## Adding a new check
+`go build -o devcheck ./cmd/devcheck` gives you a binary to try in another directory. The repo gitignores `/devcheck` so it will not show up in your diff.
 
-Most contributions are new checks. Here's how:
+## Adding a check
 
-1. Create `internal/checks/yourcheck.go`
-2. Implement the `Check` interface:
+Every check is a struct with two methods, in `internal/check/`. Read [`internal/check/binary.go`](internal/check/binary.go) first, it is the smallest one. [`internal/check/gowork.go`](internal/check/gowork.go) is a good second example: it parses a file and reports which entries are missing.
+
+1. Add `internal/check/yourcheck.go` in package `check`:
 
 ```go
-type YourCheck struct{}
+type YourCheck struct {
+	Dir string
+}
 
 func (c *YourCheck) Name() string { return "your check name" }
 
-func (c *YourCheck) Run(ctx context.Context) check.Result {
-    return check.Result{
-        Name:    c.Name(),
-        Status:  check.StatusPass,
-        Message: "looks good",
-        Fix:     "", // shown with --fix if this fails
-    }
+func (c *YourCheck) Run(_ context.Context) Result {
+	return Result{
+		Name:    c.Name(),
+		Status:  StatusPass,
+		Message: "what is true right now",
+		Fix:     "", // printed under the failure when --fix is passed
+	}
 }
 ```
 
-3. Register it in `internal/check/registry.go` under the right stack condition
-4. Add a test in `internal/checks/yourcheck_test.go` — cover both pass and fail
-5. Run `go test ./...` and make sure everything passes
-6. Open a PR referencing the issue (e.g. "Closes #5")
+2. Register it in [`internal/check/registry.go`](internal/check/registry.go), inside the `if` for the stack it belongs to. If it needs a file that may not exist, guard it with `fileExists`.
+3. If the check needs to detect something new, add the field to `DetectedStack` in [`internal/detector/detector.go`](internal/detector/detector.go) and set it in `Detect`.
+4. Add `internal/check/yourcheck_test.go`.
 
-Before you start on something, leave a comment on the issue so nobody duplicates work.
+Statuses: `StatusPass`, `StatusWarn` for something worth mentioning that will not stop you working, `StatusFail` for something that will, and `StatusSkipped` when the check could not run at all. Skipped results are hidden unless `--verbose` is passed.
 
-## PR checklist
+Messages are lowercase and say what is true, not what to do. The `Fix` field is where the instruction goes.
 
-- `go build ./...` passes
-- `go test ./...` passes
-- `go vet ./...` passes
-- Test covers pass and fail cases
+## Tests
+
+Cover at least the pass case and the fail case. Use `t.TempDir()` for anything that reads files.
+
+Do not make a test depend on a running service. Checks that talk to something take an injectable function so you can stub it: see `dialer` in `port.go` and `pinger` in `redis.go`. For a real connection failure without a server, dial a closed port on localhost.
+
+## Pull requests
+
+Fill in the checklist in the template. Link the issue in the description, for example "Closes #31". Comment on an issue before you start so two people do not write the same check.
+
+## Labels
+
+- `good first issue` — self-contained, nothing to ask me first
+- `checker` — adds or changes a check
+- `help wanted` — needs a judgement call or a service to test against
+- `enhancement` — a feature that is not a check
+- `bug` — something is broken
+- `documentation` — docs only
 
 ## Questions
 
-Open a GitHub Discussion or leave a comment on the issue.
+Open a Discussion or comment on the issue.
